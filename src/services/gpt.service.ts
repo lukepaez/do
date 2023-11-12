@@ -6,7 +6,6 @@ export const openAi = (event: any, model: string) => {
     const messages = event;
 
     const chatCompletionsCreate = async (): Promise<ChatCompletion.Choice> => {
-        console.log(process.env);
         const openai = new OpenAI({
             apiKey: process.env.OPEN_API_KEY,
             organization: process.env.OPEN_AI_ORG,
