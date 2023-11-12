@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ChatCompletionsAPI } from '../services/openAI/chat.service';
 import { insertPrompt } from '../config/helper';
 
-export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
+export const createEvent = async (req: any, res: FastifyReply) => {
     // insert prompt
     const messages = insertPrompt(req.body);
 
