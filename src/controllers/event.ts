@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ChatCompletionsAPI } from '../services/gpt.service';
+import { ChatCompletionsAPI } from '../services/chat.service';
 
 export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
     // create event
