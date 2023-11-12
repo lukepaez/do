@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ChatCompletionsAPI } from '../services/chat.service';
+import { ChatCompletionsAPI } from '../services/openAI/chat.service';
 import { insertPrompt } from '../config/helper';
 
 export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
@@ -7,11 +7,12 @@ export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
     const messages = insertPrompt(req.body);
 
     // create event
-    const event = ChatCompletionsAPI(messages, 'gpt-3.5-turbo');
+    const event = ChatCompletionsAPI(messages, 'gpt-4-1106-preview');
 
     // call gpt
     const data = await event.chatCompletionsCreate();
 
+    // eslint-disable-next-line no-console
     console.log(data);
 
     // return res
