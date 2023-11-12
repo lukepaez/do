@@ -11,7 +11,20 @@ export const eventRoutes = (
     fastify.post('/event', {
         schema: {
             response: {
-                201: {},
+                200: {
+                    type: 'object',
+                    properties: {
+                        index: { type: 'integer' },
+                        finish_reason: { type: 'string' },
+                        message: {
+                            type: 'object',
+                            properties: {
+                                role: { type: 'string' },
+                                content: { type: 'string' },
+                            },
+                        },
+                    },
+                },
             },
         },
         handler: createEvent,
