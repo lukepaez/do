@@ -17,7 +17,7 @@ export const conversationRoutes = (
             response: {
                 200: {
                     type: 'array',
-                    conversations: {
+                    items: {
                         type: 'object',
                         properties: {
                             id: { type: 'integer' },
