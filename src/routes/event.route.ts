@@ -14,6 +14,7 @@ export const eventRoutes = (
                 200: {
                     type: 'object',
                     properties: {
+                        id: { type: 'string' },
                         index: { type: 'integer' },
                         finish_reason: { type: 'string' },
                         message: {
