@@ -1,5 +1,5 @@
 import { register } from './index';
-
+import './config/var';
 const app = register();
 
 // serve app
