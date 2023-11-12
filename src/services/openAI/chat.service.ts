@@ -13,6 +13,7 @@ export const ChatCompletionsAPI = (event: any, model: string) => {
 
         const completion = await openai.chat.completions.create({
             messages: messages,
+            response_format: { type: 'json_object' },
             model: modelId,
         });
 
