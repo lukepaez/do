@@ -1,12 +1,18 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ChatCompletionsAPI } from '../services/chat.service';
+import { insertPrompt } from '../config/helper';
 
 export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
+    // insert prompt
+    const messages = insertPrompt(req.body);
+
     // create event
-    const event = ChatCompletionsAPI(req.body, 'gpt-3.5-turbo');
+    const event = ChatCompletionsAPI(messages, 'gpt-3.5-turbo');
 
     // call gpt
     const data = await event.chatCompletionsCreate();
+
+    console.log(data);
 
     // return res
     res.send(data);
