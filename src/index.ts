@@ -3,11 +3,12 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { initRoutes } from './routes/init.routes';
 import { conversationRoutes } from './routes/conversation.routes';
+import { eventRoutes } from './routes/event.route';
 
 const swaggerOptions = {
     swagger: {
         info: {
-            title: 'Do API',
+            title: 'Do',
             description: 'Please reach out on discord @do.',
             version: '1.0.0',
         },
@@ -38,5 +39,8 @@ export const register = () => {
 
     // conversation routes
     fastify.register(conversationRoutes);
+
+    // event routes
+    fastify.register(eventRoutes);
     return fastify;
 };
