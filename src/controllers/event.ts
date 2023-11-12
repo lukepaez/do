@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { openAi } from '../services/gpt.service';
+import { ChatCompletionsAPI } from '../services/gpt.service';
 
 export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
     // create event
-    const event = openAi(req.body, 'gpt-3.5-turbo');
+    const event = ChatCompletionsAPI(req.body, 'gpt-3.5-turbo');
 
     // call gpt
     const data = await event.chatCompletionsCreate();

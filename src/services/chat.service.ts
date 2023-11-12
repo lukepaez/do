@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { ChatCompletion } from 'openai/resources/chat/completions';
 
-export const openAi = (event: any, model: string) => {
+export const ChatCompletionsAPI = (event: any, model: string) => {
     const modelId = model;
     const messages = event;
 
