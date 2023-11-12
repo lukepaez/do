@@ -30,5 +30,10 @@
     "prettier": "^2.8.7",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "fastify-swagger": "^5.2.0",
+    "uuid": "^9.0.1"
   }
 }
