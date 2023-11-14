@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import Fastify from 'fastify';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
@@ -47,4 +48,9 @@ export const register = () => {
     fastify.register(conversationRoutes);
     fastify.register(eventRoutes);
     return fastify;
+};
+
+export const createTimestamp = (req: any) => {
+    const timestamp = req.timestamp;
+    console.log('\n', timestamp);
 };

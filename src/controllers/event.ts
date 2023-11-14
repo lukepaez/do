@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { FastifyReply } from 'fastify';
 import { Assistants } from '../services/openAI/assistants/assistants.service';
 import { Threads } from '../services/openAI/assistants/threads.service';
@@ -16,11 +17,14 @@ const threadMap: Data = {};
 export const createEvent = async (req: any, res: FastifyReply) => {
     try {
         const user = await temp(req.params.userId);
+
         console.log(req?.body.content);
 
         if (user instanceof Error) {
             return user;
         }
+
+        //console.log('\n My user: ', user);
 
         const message = await Messages.createMessage(
             user[req.params.userId],
@@ -55,6 +59,8 @@ export const createEvent = async (req: any, res: FastifyReply) => {
         const messages = await Messages.listMessages(user[req.params.userId]);
 
         console.log('\n My messages: ', messages);
+
+        console.log('\n My content: ', messages.data[0].content);
 
         const response = messages.data
             .filter(msg => {
