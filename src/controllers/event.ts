@@ -6,10 +6,16 @@ import { Messages } from '../services/openAI/assistants/messages.service';
 import { Runs } from '../services/openAI/assistants/runs.service';
 import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
-import map from './map.json';
+
+type Data = {
+    userId: string;
+    thread_id: string;
+    assistant_id: string;
+};
 
 export const createEvent = async (req: any, res: FastifyReply) => {
     try {
+        // create assistant
         const assistant = await Assistants.createAssistant(
             'You are a personal grammar coach. Evaluate my text and sugguest a one sentence critique on how to make it more gramatically correct.',
             'Grammy',
@@ -17,18 +23,16 @@ export const createEvent = async (req: any, res: FastifyReply) => {
             'gpt-4-1106-preview'
         );
 
-        console.log('\n My Assistant: ', assistant);
+        console.log('\n My Assistant: ', assistant.id);
 
         const thread = await Threads.createThread();
 
         console.log('\n My Thread: ', thread);
 
-        const alive = insertUser(thread.id);
-
         const message = await Messages.createMessage(
             thread.id,
             'user',
-            req.body?.content
+            req?.body.content
         );
 
         console.log('\n My Message: ', message);
@@ -66,54 +70,65 @@ export const createEvent = async (req: any, res: FastifyReply) => {
     } catch (error) {
         console.log(error);
     }
-
-    // // insert prompt
-    // const messages = insertPrompt(req.body);
-
-    // // create event
-    // const event = ChatCompletionsAPI(messages, 'gpt-4-1106-preview');
-
-    // // call gpt
-    // const data = await event.chatCompletionsCreate();
-
-    // // eslint-disable-next-line no-console
-    // console.log(data);
-
-    // // return res
-    // res.send(data);
-
-    // //gpt tp be called
-    // //provide gpt the event list
-    // //provide gpt the user profile prompt
-    // //use a system prompt to tell gpt to analyze the event list and the user profile
-    // //respond short to the user for immediate ack of event
-    // //we also want gpt to update the user's user profile prompt if necessary
-
-    // //JSON-mode?
 };
 
-export const insertUser = (thread_id: string) => {
-    type Data = {
-        user: number;
-        thread_id: string;
-    };
-
-    const old = readFileSync(path.resolve(__dirname, './map.json'), 'utf-8');
+// does user exist?
+// yes: does thread exist
+//no: insert new thread
+// no: insert new user and new thread
+export const insertUser = async (userId: string, content: string) => {
+    const old = readFileSync(
+        path.resolve(__dirname, '../../users.json'),
+        'utf-8'
+    );
 
     const json: Data[] = JSON.parse(old);
-    console.log('\n My json data: ', json);
+
     if (!json.length) {
-        json.push({ user: 1, thread_id: thread_id });
+        // create assistant
+        const assistant = await Assistants.createAssistant(
+            'You are a personal grammar coach. Evaluate my text and sugguest a one sentence critique on how to make it more gramatically correct.',
+            'Grammy',
+            [],
+            'gpt-4-1106-preview'
+        );
+
+        console.log('\n My Assistant: ', assistant);
+
+        const thread = await Threads.createThread();
+
+        console.log('\n My Thread: ', thread);
+
+        const message = await Messages.createMessage(
+            thread.id,
+            'user',
+            content
+        );
+
+        console.log('\n My Message: ', message);
+
+        const user: Data = {
+            userId: userId,
+            thread_id: thread.id,
+            assistant_id: assistant.id,
+        };
+
+        // first user
+        json.push(user);
         const newJson = JSON.stringify(json);
         writeFileSync(path.resolve(__dirname, './map.json'), newJson, 'utf-8');
-        return true;
+        return user;
     }
 
+    // list users
     for (const obj of json) {
-        if (obj.thread_id === thread_id) {
-            return true;
+        // if user exists
+        if (obj.userId === userId) {
+            // if thread exists
+            // eslint-disable-next-line no-prototype-builtins
+            if (obj.hasOwnProperty('thread_id') && obj.thread_id != '') {
+                return obj;
+            }
         }
     }
-
-    return false;
 };

@@ -17,3 +17,22 @@ export const insertPrompt = (body: any) => {
 
     return body;
 };
+
+export const lookupUser = () => {
+    // // insert prompt
+    // const messages = insertPrompt(req.body);
+    // // eslint-disable-next-line no-console
+    // const userIdObj = JSON.stringify(req.params);
+    // // eslint-disable-next-line no-console
+    // console.log(userIdObj);
+    // fs.writeFile('newUser.json', userIdObj, 'utf8', function (err) {
+    //     if (err) {
+    //         // eslint-disable-next-line no-console
+    //         console.log('An error occurred while writing JSON Object to File.');
+    //         // eslint-disable-next-line no-console
+    //         return console.log(err);
+    //     }
+    //     // eslint-disable-next-line no-console
+    //     console.log('JSON file has been saved.');
+    // });
+};

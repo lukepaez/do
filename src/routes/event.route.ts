@@ -8,7 +8,7 @@ export const eventRoutes = (
     done: any
 ) => {
     // create event
-    fastify.post('/event', {
+    fastify.post(`/event/:userId`, {
         schema: {
             response: {
                 200: {
