@@ -1,0 +1,3 @@
+-place to store context window for each user - aka "messages"
+-need to save updated user profile on each event update
+-create user class or module to centralize user information and separate conversation threads
