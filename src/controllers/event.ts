@@ -22,6 +22,8 @@ export const createEvent = async (req: any, res: FastifyReply) => {
             return user;
         }
 
+        console.log('\n My users: ', user);
+
         const message = await Messages.createMessage(
             user[req.params.userId],
             'user',
