@@ -16,14 +16,6 @@ export const eventRoutes = (
                     properties: {
                         id: { type: 'string' },
                         index: { type: 'integer' },
-                        finish_reason: { type: 'string' },
-                        message: {
-                            type: 'object',
-                            properties: {
-                                role: { type: 'string' },
-                                content: { type: 'string' },
-                            },
-                        },
                     },
                 },
             },
