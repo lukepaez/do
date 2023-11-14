@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import { FastifyReply } from 'fastify';
-import { Assistants } from '../services/openAI/assistants/assistants.service';
-import { Threads } from '../services/openAI/assistants/threads.service';
+import { Assistants } from '../services/openai/assistants/assistants.service';
+import { Threads } from '../services/openai/assistants/threads.service';
 import OpenAI from 'openai';
-import { Messages } from '../services/openAI/assistants/messages.service';
-import { Runs } from '../services/openAI/assistants/runs.service';
+import { Messages } from '../services/openai/assistants/messages.service';
+import { Runs } from '../services/openai/assistants/runs.service';
 import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
