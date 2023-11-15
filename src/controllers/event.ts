@@ -1,29 +1,113 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { ChatCompletionsAPI } from '../services/openAI/chat.service';
-import { insertPrompt } from '../config/helper';
+import { FastifyReply } from 'fastify';
+import { Assistants } from '../services/openai/assistants/assistants.service';
+import { Threads } from '../services/openai/assistants/threads.service';
+import OpenAI from 'openai';
+import { Messages } from '../services/openai/assistants/messages.service';
+import { Runs } from '../services/openai/assistants/runs.service';
+import { readFileSync, writeFileSync } from 'fs';
+import path from 'path';
 
-export const createEvent = async (req: FastifyRequest, res: FastifyReply) => {
-    // insert prompt
-    const messages = insertPrompt(req.body);
+type Data = {
+    [key: string]: string;
+};
 
-    // create event
-    const event = ChatCompletionsAPI(messages, 'gpt-4-1106-preview');
+const threadMap: Data = {};
 
-    // call gpt
-    const data = await event.chatCompletionsCreate();
+export const createEvent = async (req: any, res: FastifyReply) => {
+    try {
+        const user = await handleThread(req.params.userId);
+        console.log(req?.body.content);
 
-    // eslint-disable-next-line no-console
-    console.log(data);
+        if (user instanceof Error) {
+            return user;
+        }
 
-    // return res
-    res.send(data);
+        console.log('\n My users: ', user);
 
-    //gpt tp be called
-    //provide gpt the event list
-    //provide gpt the user profile prompt
-    //use a system prompt to tell gpt to analyze the event list and the user profile
-    //respond short to the user for immediate ack of event
-    //we also want gpt to update the user's user profile prompt if necessary
+        const message = await Messages.createMessage(
+            user[req.params.userId],
+            'user',
+            req?.body.content
+        );
 
-    //JSON-mode?
+        console.log('\n My Message: ', message);
+
+        const run = await Runs.createRun(
+            user[req.params.userId],
+            process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : ''
+        );
+
+        console.log('\n My Run: ', run);
+
+        for (let i = 0; i < 3; i++) {
+            await new Promise(resolve => {
+                setTimeout(resolve, 3000);
+                console.log('polling...');
+            });
+            const runStatus = await Runs.retrieveRun(
+                user[req.params.userId],
+                run.id
+            );
+            if (runStatus.status != 'completed') {
+                continue;
+            }
+            break;
+        }
+
+        const messages = await Messages.listMessages(user[req.params.userId]);
+
+        console.log('\n My messages: ', messages);
+
+        const response = messages.data
+            .filter(msg => {
+                console.log(
+                    msg?.content[0].type === 'text'
+                        ? msg.content[0].text.value
+                        : null
+                );
+                return msg.run_id === run.id && msg.role === 'assistant';
+            })
+            .pop();
+        res.send({
+            id:
+                response?.content[0].type === 'text'
+                    ? response.content[0].text.value
+                    : null,
+            index: 0,
+        });
+    } catch (error) {
+        console.log(error);
+        return error;
+    }
+};
+
+export const handleThread = async (userId: string): Promise<Data | Error> => {
+    try {
+        console.log('\n My user: ', userId);
+        let openAiThreadId = threadMap[userId];
+
+        // no thread exists for user
+        if (!openAiThreadId) {
+            // create thread
+            const thread = await Threads.createThread();
+            openAiThreadId = thread.id;
+            addThreadToMap(userId, openAiThreadId);
+            return threadMap;
+        }
+
+        return threadMap;
+
+        // add messages to thread
+    } catch (error) {
+        console.log(error);
+        return new Error('bad');
+    }
+};
+
+const addThreadToMap = (userId: string, threadId: string) => {
+    return (threadMap[userId] = threadId);
+};
+
+const getThreadId = (userId: string) => {
+    return threadMap[userId];
 };

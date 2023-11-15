@@ -4,6 +4,7 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import { initRoutes } from './routes/init.routes';
 import { conversationRoutes } from './routes/conversation.routes';
 import { eventRoutes } from './routes/event.route';
+import { randomUUID } from 'crypto';
 
 const swaggerOptions = {
     swagger: {
@@ -24,6 +25,7 @@ const swaggerUi = {
     routePrefix: '/docs',
     exposeRoute: true,
 };
+
 // build app
 export const register = () => {
     const fastify = Fastify({
@@ -34,13 +36,15 @@ export const register = () => {
     fastify.register(fastifySwagger, swaggerOptions);
     fastify.register(fastifySwaggerUi, swaggerUi);
 
-    // init routes
+    // hooks
+    fastify.addHook('onRequest', (req: any, res, done) => {
+        req.uniqueId = randomUUID();
+        done();
+    });
+
+    // routes
     fastify.register(initRoutes);
-
-    // conversation routes
     fastify.register(conversationRoutes);
-
-    // event routes
     fastify.register(eventRoutes);
     return fastify;
 };

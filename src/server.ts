@@ -5,7 +5,7 @@ const app = register();
 // serve app
 app.listen(
     {
-        port: 5000,
+        port: 5005,
         listenTextResolver: addr => {
             return `do server is listening at ${addr}`;
         },
