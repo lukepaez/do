@@ -4,17 +4,17 @@ import { Threads } from '../services/openai/assistants/threads.service';
 import OpenAI from 'openai';
 import { Messages } from '../services/openai/assistants/messages.service';
 import { Runs } from '../services/openai/assistants/runs.service';
-import { readFileSync, writeFileSync } from 'fs';
-import path from 'path';
+import { db } from '../server';
 
 type Data = {
-    [key: string]: string;
+    discord_id: string;
+    thread_id: string;
 };
-
-const threadMap: Data = {};
 
 export const createEvent = async (req: any, res: FastifyReply) => {
     try {
+        // db logic here
+
         const user = await handleThread(req.params.userId);
         console.log(req?.body.content);
 
@@ -22,10 +22,8 @@ export const createEvent = async (req: any, res: FastifyReply) => {
             return user;
         }
 
-        console.log('\n My users: ', user);
-
         const message = await Messages.createMessage(
-            user[req.params.userId],
+            user.thread_id,
             'user',
             req?.body.content
         );
@@ -33,7 +31,7 @@ export const createEvent = async (req: any, res: FastifyReply) => {
         console.log('\n My Message: ', message);
 
         const run = await Runs.createRun(
-            user[req.params.userId],
+            user.thread_id,
             process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : ''
         );
 
@@ -44,17 +42,14 @@ export const createEvent = async (req: any, res: FastifyReply) => {
                 setTimeout(resolve, 3000);
                 console.log('polling...');
             });
-            const runStatus = await Runs.retrieveRun(
-                user[req.params.userId],
-                run.id
-            );
+            const runStatus = await Runs.retrieveRun(user.thread_id, run.id);
             if (runStatus.status != 'completed') {
                 continue;
             }
             break;
         }
 
-        const messages = await Messages.listMessages(user[req.params.userId]);
+        const messages = await Messages.listMessages(user.thread_id);
 
         console.log('\n My messages: ', messages);
 
@@ -84,18 +79,23 @@ export const createEvent = async (req: any, res: FastifyReply) => {
 export const handleThread = async (userId: string): Promise<Data | Error> => {
     try {
         console.log('\n My user: ', userId);
-        let openAiThreadId = threadMap[userId];
 
-        // no thread exists for user
-        if (!openAiThreadId) {
-            // create thread
-            const thread = await Threads.createThread();
-            openAiThreadId = thread.id;
-            addThreadToMap(userId, openAiThreadId);
-            return threadMap;
+        const data = await checkIfUserExists(userId)
+            .then(userExists => {
+                console.log('\n UserExists: ', userExists);
+                if (userExists) {
+                    return userExists;
+                }
+            })
+            .catch(error => {
+                console.log('\n My error: ', error);
+                return new Error('bad data from db');
+            });
+
+        if (data === undefined || data instanceof Error) {
+            return new Error('bad data');
         }
-
-        return threadMap;
+        return data;
 
         // add messages to thread
     } catch (error) {
@@ -104,10 +104,31 @@ export const handleThread = async (userId: string): Promise<Data | Error> => {
     }
 };
 
-const addThreadToMap = (userId: string, threadId: string) => {
-    return (threadMap[userId] = threadId);
-};
+const checkIfUserExists = async (user: string): Promise<Data> => {
+    return new Promise((resolve, reject) => {
+        db.get(
+            'SELECT * FROM users WHERE discord_id = ?',
+            [user],
+            async (err, row: Data) => {
+                if (err) {
+                    console.log('\n Error checking if user in db exists.');
+                    reject(err);
+                }
 
-const getThreadId = (userId: string) => {
-    return threadMap[userId];
+                // new user and thread
+                if (row === undefined) {
+                    console.log('user does not exists.. creating thread...');
+                    const thread = await Threads.createThread();
+                    console.log('thread created now inserting user into db');
+                    db.run(
+                        `INSERT INTO users(discord_id, thread_id) VALUES(?, ?)`,
+                        [user, thread.id]
+                    );
+                    return resolve({ discord_id: user, thread_id: thread.id });
+                }
+
+                return resolve(row);
+            }
+        );
+    });
 };
