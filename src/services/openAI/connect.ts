@@ -3,7 +3,7 @@ import sqlite3 from 'sqlite3';
 
 // open the database
 const db = new sqlite3.Database(
-    './db/chinook.db',
+    './db/dinky.db',
     sqlite3.OPEN_READWRITE,
     err => {
         if (err) {
