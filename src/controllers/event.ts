@@ -1,7 +1,5 @@
 import { FastifyReply } from 'fastify';
-import { Assistants } from '../services/openai/assistants/assistants.service';
 import { Threads } from '../services/openai/assistants/threads.service';
-import OpenAI from 'openai';
 import { Messages } from '../services/openai/assistants/messages.service';
 import { Runs } from '../services/openai/assistants/runs.service';
 import { db } from '../server';
@@ -11,25 +9,34 @@ type Data = {
     thread_id: string;
 };
 
-export const createEvent = async (req: any, res: FastifyReply) => {
+type eventRequest = {
+    content: string;
+    userId: string;
+};
+
+export const createEvent = async (
+    { content, userId }: eventRequest,
+    res: FastifyReply
+) => {
     try {
-        // db logic here
+        // manage new/existing thread by user
+        const user = await handleThread(userId);
 
-        const user = await handleThread(req.params.userId);
-        console.log(req?.body.content);
-
+        // throw error on bad db ops
         if (user instanceof Error) {
-            return user;
+            throw user;
         }
 
+        // create a message
         const message = await Messages.createMessage(
             user.thread_id,
             'user',
-            req?.body.content
+            content
         );
 
         console.log('\n My Message: ', message);
 
+        // create a run
         const run = await Runs.createRun(
             user.thread_id,
             process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : ''
@@ -37,6 +44,7 @@ export const createEvent = async (req: any, res: FastifyReply) => {
 
         console.log('\n My Run: ', run);
 
+        // polling logic: TODO: refactor
         for (let i = 0; i < 3; i++) {
             await new Promise(resolve => {
                 setTimeout(resolve, 3000);
@@ -49,10 +57,12 @@ export const createEvent = async (req: any, res: FastifyReply) => {
             break;
         }
 
+        // list all messages
         const messages = await Messages.listMessages(user.thread_id);
 
         console.log('\n My messages: ', messages);
 
+        // return response;
         const response = messages.data
             .filter(msg => {
                 console.log(
@@ -71,15 +81,13 @@ export const createEvent = async (req: any, res: FastifyReply) => {
             index: 0,
         });
     } catch (error) {
-        console.log(error);
         return error;
     }
 };
 
 export const handleThread = async (userId: string): Promise<Data | Error> => {
     try {
-        console.log('\n My user: ', userId);
-
+        // user thread logic
         const data = await checkIfUserExists(userId)
             .then(userExists => {
                 console.log('\n UserExists: ', userExists);
@@ -87,24 +95,20 @@ export const handleThread = async (userId: string): Promise<Data | Error> => {
                     return userExists;
                 }
             })
-            .catch(error => {
-                console.log('\n My error: ', error);
+            .catch(() => {
                 return new Error('bad data from db');
             });
 
         if (data === undefined || data instanceof Error) {
-            return new Error('bad data');
+            throw new Error('bad data from db');
         }
         return data;
-
-        // add messages to thread
-    } catch (error) {
-        console.log(error);
-        return new Error('bad');
+    } catch (error: any) {
+        return error;
     }
 };
 
-const checkIfUserExists = async (user: string): Promise<Data> => {
+const checkIfUserExists = async (user: string): Promise<Data | Error> => {
     return new Promise((resolve, reject) => {
         db.get(
             'SELECT * FROM users WHERE discord_id = ?',

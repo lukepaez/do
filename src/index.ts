@@ -1,9 +1,9 @@
 import Fastify from 'fastify';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import { initRoutes } from './routes/init.routes';
-import { conversationRoutes } from './routes/conversation.routes';
-import { eventRoutes } from './routes/event.route';
+import { initRoutes } from './routes/health/init.routes';
+import { conversationRoutes } from './routes/conversation/conversation.routes';
+import { eventRoutes } from './routes/events/event.route';
 import { randomUUID } from 'crypto';
 
 const swaggerOptions = {
@@ -29,7 +29,11 @@ const swaggerUi = {
 // build app
 export const register = () => {
     const fastify = Fastify({
-        logger: true,
+        logger: {
+            transport: {
+                target: 'pino-pretty',
+            },
+        },
     });
 
     // swagger
