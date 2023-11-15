@@ -15,7 +15,7 @@ const threadMap: Data = {};
 
 export const createEvent = async (req: any, res: FastifyReply) => {
     try {
-        const user = await temp(req.params.userId);
+        const user = await handleThread(req.params.userId);
         console.log(req?.body.content);
 
         if (user instanceof Error) {
@@ -81,68 +81,7 @@ export const createEvent = async (req: any, res: FastifyReply) => {
     }
 };
 
-// does user exist?
-// yes: does thread exist
-//no: insert new thread
-// no: insert new user and new thread
-export const insertUser = async (userId: string, content: string) => {
-    const old = readFileSync(
-        path.resolve(__dirname, '../../users.json'),
-        'utf-8'
-    );
-
-    const json: Data[] = JSON.parse(old);
-
-    if (!json.length) {
-        // create assistant
-        const assistant = await Assistants.createAssistant(
-            'You are a personal grammar coach. Evaluate my text and sugguest a one sentence critique on how to make it more gramatically correct.',
-            'Grammy',
-            [],
-            'gpt-4-1106-preview'
-        );
-
-        console.log('\n My Assistant: ', assistant);
-
-        const thread = await Threads.createThread();
-
-        console.log('\n My Thread: ', thread);
-
-        const message = await Messages.createMessage(
-            thread.id,
-            'user',
-            content
-        );
-
-        console.log('\n My Message: ', message);
-
-        const user: Data = {
-            userId: userId,
-            thread_id: thread.id,
-            assistant_id: assistant.id,
-        };
-
-        // first user
-        json.push(user);
-        const newJson = JSON.stringify(json);
-        writeFileSync(path.resolve(__dirname, './map.json'), newJson, 'utf-8');
-        return user;
-    }
-
-    // list users
-    for (const obj of json) {
-        // if user exists
-        if (obj.userId === userId) {
-            // if thread exists
-            // eslint-disable-next-line no-prototype-builtins
-            if (obj.hasOwnProperty('thread_id') && obj.thread_id != '') {
-                return obj;
-            }
-        }
-    }
-};
-
-export const temp = async (userId: string): Promise<Data | Error> => {
+export const handleThread = async (userId: string): Promise<Data | Error> => {
     try {
         console.log('\n My user: ', userId);
         let openAiThreadId = threadMap[userId];
