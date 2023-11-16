@@ -7,6 +7,7 @@ import { Messages } from '../services/openai/assistants/messages.service';
 import { Runs } from '../services/openai/assistants/runs.service';
 import { ChatCompletionsAPI } from '../services/openai/chat.service';
 import { db } from '../server';
+import { timeStamp } from 'console';
 
 type Data = {
     discord_id: string;
@@ -17,8 +18,20 @@ export const createEvent = async (req: any, res: FastifyReply) => {
     try {
         // db logic here
 
+        //timestamping user response
+
+        const timeZone = 'EST';
+        const epochTime = new Date();
+        if (req && req.body) {
+            req.body.content = req.body.content.concat(
+                ` (time${timeZone}: `,
+                epochTime,
+                `)`
+            );
+        }
+
         const user = await handleThread(req.params.userId);
-        console.log(req?.body.content);
+        console.log('My req body: ', req?.body.content);
 
         if (user instanceof Error) {
             return user;
@@ -30,14 +43,14 @@ export const createEvent = async (req: any, res: FastifyReply) => {
             req?.body.content
         );
 
-        console.log('\n My Message: ', message);
+        //console.log('\n My Message: ', message);
 
         const run = await Runs.createRun(
             user.thread_id,
             process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : ''
         );
 
-        console.log('\n My Run: ', run);
+        //console.log('\n My Run: ', run);
 
         for (let i = 0; i < 3; i++) {
             await new Promise(resolve => {
@@ -53,9 +66,9 @@ export const createEvent = async (req: any, res: FastifyReply) => {
 
         const messages = await Messages.listMessages(user.thread_id);
 
-        console.log('\n My messages: ', messages);
+        //console.log('\n My messages: ', messages);
 
-        console.log('\n My content: ', messages.data[0].content);
+        //console.log('\n My content: ', messages.data[0].content);
 
         //console.log('\n My content: ', messages.data[0].content[0]?.text.value);
 
@@ -82,7 +95,7 @@ export const createEvent = async (req: any, res: FastifyReply) => {
 
         const responseInJson = await chatObj.chatCompletionsCreate();
 
-        console.log('json mode response: ', responseInJson);
+        //console.log('json mode response: ', responseInJson);
 
         if (responseInJson.message.content === null) {
             return new Error('bad gpt res');
@@ -153,3 +166,7 @@ const checkIfUserExists = async (user: string): Promise<Data> => {
         );
     });
 };
+
+function getCurrentTimestamp() {
+    return Date.now();
+}
