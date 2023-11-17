@@ -1,19 +1,14 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import OpenAI from 'openai';
+import { openai } from '../../../server';
 /** Class representing OpenAI Threads API */
-export class Threads {
+class Threads {
     /**
      * @description
      * @param
      * @returns
      */
-    static createThread = async () => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const emptyThread = await openai.beta.threads.create();
-        return emptyThread;
+    public createThread = async () => {
+        const thread = await openai.beta.threads.create();
+        return thread;
     };
 
     /**
@@ -21,13 +16,9 @@ export class Threads {
      * @param
      * @returns
      */
-    static retrieveThread = async (threadId: string) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const myThread = await openai.beta.threads.retrieve(threadId);
-        return myThread;
+    public retrieveThread = async (threadId: string) => {
+        const thread = await openai.beta.threads.retrieve(threadId);
+        return thread;
     };
 
     /**
@@ -35,19 +26,15 @@ export class Threads {
      * @param
      * @returns
      */
-    static modifyThread = async (
+    public modifyThread = async (
         threadId: string,
         modified?: boolean,
         user?: string
     ) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const updatedThread = await openai.beta.threads.update(threadId, {
+        const thread = await openai.beta.threads.update(threadId, {
             metadata: { modified: modified, user: user },
         });
-        return updatedThread;
+        return thread;
     };
 
     /**
@@ -55,12 +42,11 @@ export class Threads {
      * @param
      * @returns
      */
-    static deleteThread = async (threadId: string) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const response = await openai.beta.threads.del(threadId);
-        return response;
+    public deleteThread = async (threadId: string) => {
+        const thread = await openai.beta.threads.del(threadId);
+        return thread;
     };
 }
+
+export const { createThread, deleteThread, retrieveThread, modifyThread } =
+    new Threads();

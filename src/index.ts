@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest } from 'fastify';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { initRoutes } from './routes/health/init.routes';
 import { conversationRoutes } from './routes/conversation/conversation.routes';
 import { eventRoutes } from './routes/events/event.route';
-import { randomUUID } from 'crypto';
 
 const swaggerOptions = {
     swagger: {
@@ -40,17 +39,6 @@ export const register = () => {
     // swagger
     fastify.register(fastifySwagger, swaggerOptions);
     fastify.register(fastifySwaggerUi, swaggerUi);
-
-    // hooks
-    fastify.addHook('onRequest', (req: any, res, done) => {
-        req.uniqueId = randomUUID();
-        done();
-    });
-
-    fastify.addHook('onRequest', (req: any, res, done) => {
-        req.timestamp = new Date();
-        done();
-    });
 
     // routes
     fastify.register(initRoutes);

@@ -2,8 +2,18 @@ import { register } from './index';
 import sqlite3 from 'sqlite3';
 import './config/var';
 import path from 'path';
-import fastify from 'fastify';
+import OpenAI from 'openai';
+
+// init api
 const app = register();
+
+// openai
+export const openai = new OpenAI({
+    apiKey: process.env.OPEN_API_KEY,
+    organization: process.env.OPEN_AI_ORG,
+});
+
+//console.log(path.resolve(__dirname, './db/dinky.db'));
 
 // init db
 export const db = new sqlite3.Database(
