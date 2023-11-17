@@ -5,6 +5,8 @@ import path from 'path';
 import fastify from 'fastify';
 const app = register();
 
+//console.log(path.resolve(__dirname, './db/dinky.db'));
+
 // init db
 export const db = new sqlite3.Database(
     path.resolve(__dirname, './db/dinky.db'),
