@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import OpenAI from 'openai';
 import { openai } from '../../../server';
 /** Class representing OpenAI Threads API */
 class Threads {

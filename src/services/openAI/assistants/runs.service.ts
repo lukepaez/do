@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import { openai } from '../../../server';
 /** Class representing OpenAI Runs API */
 class Runs {

@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import { openai } from '../../../server';
 
 /** Class representing OpenAI Assistants API */
@@ -28,8 +27,9 @@ class Assistants {
      * @param
      * @returns
      */
-    public retrieveAssistant = async () => {
-        return true;
+    public retrieveAssistant = async (assistant_id: string) => {
+        const assistant = await openai.beta.assistants.retrieve(assistant_id);
+        return assistant;
     };
 
     /**
@@ -37,8 +37,24 @@ class Assistants {
      * @param
      * @returns
      */
-    public modifyAssistant = async () => {
-        return true;
+    public modifyAssistant = async (
+        assistant_id: string,
+        instructions?: string,
+        model?: string,
+        name?: string,
+        description?: string,
+        tools?: any[],
+        file_ids?: any[],
+        metadata?: any
+    ) => {
+        const assistant = await openai.beta.assistants.update(assistant_id, {
+            instructions: instructions,
+            name: name,
+            tools: tools,
+            model: model,
+            file_ids: file_ids,
+        });
+        return assistant;
     };
 
     /**
@@ -46,8 +62,9 @@ class Assistants {
      * @param
      * @returns
      */
-    public deleteAssistant = async () => {
-        return true;
+    public deleteAssistant = async (assistant_id: string) => {
+        const response = await openai.beta.assistants.del(assistant_id);
+        return response;
     };
 
     /**
