@@ -1,29 +1,26 @@
 import OpenAI from 'openai';
+import { openai } from '../../../server';
 
 /** Class representing OpenAI Assistants API */
-export class Assistants {
+class Assistants {
     /**
      * @description
      * @param
      * @returns
      */
-    static createAssistant = async (
+    public createAssistant = async (
         instructions: string,
         name: string,
         tools: any[],
         model: string
     ) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const myAssistant = await openai.beta.assistants.create({
+        const assistant = await openai.beta.assistants.create({
             instructions: instructions,
             name: name,
             tools: tools,
             model: model,
         });
-        return myAssistant;
+        return assistant;
     };
 
     /**
@@ -31,7 +28,7 @@ export class Assistants {
      * @param
      * @returns
      */
-    static retrieveAssistant = async () => {
+    public retrieveAssistant = async () => {
         return true;
     };
 
@@ -40,7 +37,7 @@ export class Assistants {
      * @param
      * @returns
      */
-    static modifyAssistant = async () => {
+    public modifyAssistant = async () => {
         return true;
     };
 
@@ -49,7 +46,7 @@ export class Assistants {
      * @param
      * @returns
      */
-    static deleteAssistant = async () => {
+    public deleteAssistant = async () => {
         return true;
     };
 
@@ -58,7 +55,9 @@ export class Assistants {
      * @param
      * @returns
      */
-    static listAssistants = async () => {
+    public listAssistants = async () => {
         return true;
     };
 }
+
+export const { createAssistant } = new Assistants();
