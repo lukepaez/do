@@ -3,7 +3,7 @@ import { FastifyReply } from 'fastify';
 import { Threads } from '../services/openai/assistants/threads.service';
 import { Messages } from '../services/openai/assistants/messages.service';
 import { Runs } from '../services/openai/assistants/runs.service';
-import { ChatCompletionsAPI } from '../services/openai/chat.service';
+import { ChatCompletionsAPI } from '../services/openai/chat/chat.service';
 import { db } from '../server';
 import { timeStamp } from 'console';
 
