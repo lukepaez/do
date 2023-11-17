@@ -16,6 +16,6 @@ COPY . .
 RUN npm run build
 
 # expose api port
-EXPOSE 5005
+EXPOSE 8080
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/test.js"]

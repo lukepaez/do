@@ -7,6 +7,8 @@ import OpenAI from 'openai';
 // init api
 const app = register();
 
+console.log(process.env);
+
 // openai
 export const openai = new OpenAI({
     apiKey: process.env.OPEN_API_KEY,
@@ -16,24 +18,24 @@ export const openai = new OpenAI({
 //console.log(path.resolve(__dirname, './db/dinky.db'));
 
 // init db
-export const db = new sqlite3.Database(
-    path.resolve(__dirname, './db/dinky.db'),
-    sqlite3.OPEN_READWRITE,
-    err => {
-        if (err) return console.error(err.message);
-        console.log('Connected to the in-memory SQlite database.');
-    }
-);
+//export const db = new sqlite3.Database(
+//    path.resolve(__dirname, './db/dinky.db'),
+//    sqlite3.OPEN_READWRITE,
+//    err => {
+//        if (err) return console.error(err.message);
+//        console.log('Connected to the in-memory SQlite database.');
+//    }
+//);
 
-['SIGINT', 'SIGTERM'].forEach(signal => {
-    process.on(signal, async () => {
-        await app.close();
-        process.exit(0);
-    });
-});
+//['SIGINT', 'SIGTERM'].forEach(signal => {
+//    process.on(signal, async () => {
+//        await app.close();
+//        process.exit(0);
+//    });
+//});
 
 // serve app
-app.listen({ port: 5005 }, error => {
+app.listen({ port: 8080 }, error => {
     if (error) {
         app.log.error(error);
         process.exit(1);
