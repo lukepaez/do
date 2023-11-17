@@ -1,4 +1,4 @@
-FROM node:16
+FROM --platform=linux/amd64 node:16
 
 # work directory
 WORKDIR /usr/src/app
@@ -14,6 +14,9 @@ COPY . .
 
 # build
 RUN npm run build
+
+RUN mkdir dist/db/
+COPY src/db/ dist/db/
 
 # expose api port
 EXPOSE 5005

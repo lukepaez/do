@@ -1,33 +1,56 @@
-import OpenAI from 'openai';
+import { openai } from '../../../server';
 /** Class representing OpenAI Messages API */
-export class Messages {
-    // private fields
-    private apiKey = process.env.OPEN_API_KEY;
-    private organization = process.env.OPEN_AI_ORG;
-
+class Messages {
     /**
      * @description
      * @param
      * @returns
      */
-    static createMessage = async (
+    public createMessage = async (
         thread_id: string,
         role: string,
         content: string
     ) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
+        const messages = await openai.beta.threads.messages.create(thread_id, {
+            role: 'user',
+            content: content,
         });
-        const threadMessages = await openai.beta.threads.messages.create(
+
+        return messages;
+    };
+
+    /**
+     * @description
+     * @param
+     * @returns
+     */
+    public retrieveMessage = async (thread_id: string, message_id: string) => {
+        const messages = await openai.beta.threads.messages.retrieve(
             thread_id,
+            message_id
+        );
+
+        return messages;
+    };
+
+    /**
+     * @description
+     * @param
+     * @returns
+     */
+    public modifyMessage = async (
+        thread_id: string,
+        message_id: string,
+        metadata?: object
+    ) => {
+        const messages = await openai.beta.threads.messages.update(
+            thread_id,
+            message_id,
             {
-                role: 'user',
-                content: content,
+                metadata: metadata,
             }
         );
-
-        return threadMessages;
+        return messages;
     };
 
     /**
@@ -35,33 +58,12 @@ export class Messages {
      * @param
      * @returns
      */
-    static retrieveMessage = async () => {
-        return true;
-    };
+    public listMessages = async (thread_id: string) => {
+        const messages = await openai.beta.threads.messages.list(thread_id);
 
-    /**
-     * @description
-     * @param
-     * @returns
-     */
-    static modifyMessage = async () => {
-        return true;
-    };
-
-    /**
-     * @description
-     * @param
-     * @returns
-     */
-    static listMessages = async (thread_id: string) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const threadMessages = await openai.beta.threads.messages.list(
-            thread_id
-        );
-
-        return threadMessages;
+        return messages;
     };
 }
+
+export const { createMessage, modifyMessage, listMessages, retrieveMessage } =
+    new Messages();

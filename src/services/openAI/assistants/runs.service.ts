@@ -1,27 +1,25 @@
-import OpenAI from 'openai';
+import { openai } from '../../../server';
 /** Class representing OpenAI Runs API */
-export class Runs {
-    // private fields
-    private apiKey = process.env.OPEN_API_KEY;
-    private organization = process.env.OPEN_AI_ORG;
-
+class Runs {
     /**
      * @description
      * @param
      * @returns
      */
-    static createRun = async (
+    public createRun = async (
         thread_id: string,
         assistant_id: string,
-        instructions?: string
+        instructions?: string,
+        model?: string,
+        tools?: any[],
+        metadata?: object
     ) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
         const run = await openai.beta.threads.runs.create(thread_id, {
             assistant_id: assistant_id,
             instructions: instructions,
+            model: model,
+            tools: tools,
+            metadata: metadata,
         });
 
         return run;
@@ -32,11 +30,7 @@ export class Runs {
      * @param
      * @returns
      */
-    static retrieveRun = async (thread_id: string, run_id: string) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
+    public retrieveRun = async (thread_id: string, run_id: string) => {
         const run = await openai.beta.threads.runs.retrieve(thread_id, run_id);
 
         return run;
@@ -47,8 +41,15 @@ export class Runs {
      * @param
      * @returns
      */
-    static modifyRun = async () => {
-        return true;
+    public modifyRun = async (
+        thread_id: string,
+        run_id: string,
+        metadata?: object
+    ) => {
+        const run = await openai.beta.threads.runs.update(thread_id, run_id, {
+            metadata: metadata,
+        });
+        return run;
     };
 
     /**
@@ -56,8 +57,9 @@ export class Runs {
      * @param
      * @returns
      */
-    static listRuns = async () => {
-        return true;
+    public listRuns = async (thread_id: string) => {
+        const runs = await openai.beta.threads.runs.list(thread_id);
+        return runs;
     };
 
     /**
@@ -65,8 +67,9 @@ export class Runs {
      * @param
      * @returns
      */
-    static cancelRun = async () => {
-        return true;
+    public cancelRun = async (thread_id: string, run_id: string) => {
+        const run = await openai.beta.threads.runs.cancel(thread_id, run_id);
+        return run;
     };
 
     /**
@@ -74,7 +77,16 @@ export class Runs {
      * @param
      * @returns
      */
-    static createThreadRun = async () => {
+    public createThreadRun = async () => {
         return true;
     };
 }
+
+export const {
+    createRun,
+    retrieveRun,
+    listRuns,
+    cancelRun,
+    createThreadRun,
+    modifyRun,
+} = new Runs();

@@ -1,29 +1,25 @@
-import OpenAI from 'openai';
+import { openai } from '../../../server';
 
 /** Class representing OpenAI Assistants API */
-export class Assistants {
+class Assistants {
     /**
      * @description
      * @param
      * @returns
      */
-    static createAssistant = async (
+    public createAssistant = async (
         instructions: string,
         name: string,
         tools: any[],
         model: string
     ) => {
-        const openai = new OpenAI({
-            apiKey: process.env.OPEN_API_KEY,
-            organization: process.env.OPEN_AI_ORG,
-        });
-        const myAssistant = await openai.beta.assistants.create({
+        const assistant = await openai.beta.assistants.create({
             instructions: instructions,
             name: name,
             tools: tools,
             model: model,
         });
-        return myAssistant;
+        return assistant;
     };
 
     /**
@@ -31,8 +27,9 @@ export class Assistants {
      * @param
      * @returns
      */
-    static retrieveAssistant = async () => {
-        return true;
+    public retrieveAssistant = async (assistant_id: string) => {
+        const assistant = await openai.beta.assistants.retrieve(assistant_id);
+        return assistant;
     };
 
     /**
@@ -40,8 +37,24 @@ export class Assistants {
      * @param
      * @returns
      */
-    static modifyAssistant = async () => {
-        return true;
+    public modifyAssistant = async (
+        assistant_id: string,
+        instructions?: string,
+        model?: string,
+        name?: string,
+        description?: string,
+        tools?: any[],
+        file_ids?: any[],
+        metadata?: any
+    ) => {
+        const assistant = await openai.beta.assistants.update(assistant_id, {
+            instructions: instructions,
+            name: name,
+            tools: tools,
+            model: model,
+            file_ids: file_ids,
+        });
+        return assistant;
     };
 
     /**
@@ -49,8 +62,9 @@ export class Assistants {
      * @param
      * @returns
      */
-    static deleteAssistant = async () => {
-        return true;
+    public deleteAssistant = async (assistant_id: string) => {
+        const response = await openai.beta.assistants.del(assistant_id);
+        return response;
     };
 
     /**
@@ -58,7 +72,15 @@ export class Assistants {
      * @param
      * @returns
      */
-    static listAssistants = async () => {
-        return true;
+    public listAssistants = async (
+        limit?: number,
+        order?: string,
+        after?: string,
+        before?: string
+    ) => {
+        const assistants = await openai.beta.assistants.list();
+        return assistants;
     };
 }
+
+export const { createAssistant } = new Assistants();
