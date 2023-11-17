@@ -24,8 +24,13 @@ class Messages {
      * @param
      * @returns
      */
-    public retrieveMessage = async () => {
-        return true;
+    public retrieveMessage = async (thread_id: string, message_id: string) => {
+        const messages = await openai.beta.threads.messages.retrieve(
+            thread_id,
+            message_id
+        );
+
+        return messages;
     };
 
     /**
@@ -33,8 +38,19 @@ class Messages {
      * @param
      * @returns
      */
-    public modifyMessage = async () => {
-        return true;
+    public modifyMessage = async (
+        thread_id: string,
+        message_id: string,
+        metadata?: object
+    ) => {
+        const messages = await openai.beta.threads.messages.update(
+            thread_id,
+            message_id,
+            {
+                metadata: metadata,
+            }
+        );
+        return messages;
     };
 
     /**
