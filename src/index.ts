@@ -47,6 +47,11 @@ export const register = () => {
         done();
     });
 
+    fastify.addHook('onRequest', (req: any, res, done) => {
+        req.timestamp = new Date();
+        done();
+    });
+
     // routes
     fastify.register(initRoutes);
     fastify.register(conversationRoutes);

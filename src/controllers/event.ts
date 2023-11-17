@@ -26,14 +26,9 @@ export const createEvent = async (
 
         //timestamping user response
 
-        const timeZone = 'EST';
         const epochTime = new Date();
         if (content) {
-            content = content.concat(
-                ` (time${timeZone}: `,
-                epochTime.toString(),
-                `)`
-            );
+            content = content.concat(` (time: `, epochTime.toString(), `)`);
         }
 
         // manage new/existing thread by user
