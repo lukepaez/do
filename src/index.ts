@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import Fastify, { FastifyRequest } from 'fastify';
+import Fastify from 'fastify';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { initRoutes } from './routes/health/init.routes';
@@ -45,9 +45,4 @@ export const register = () => {
     fastify.register(conversationRoutes);
     fastify.register(eventRoutes);
     return fastify;
-};
-
-export const createTimestamp = (req: any) => {
-    const timestamp = req.timestamp;
-    console.log('\n', timestamp);
 };
