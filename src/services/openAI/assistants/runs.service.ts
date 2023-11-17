@@ -9,11 +9,17 @@ class Runs {
     public createRun = async (
         thread_id: string,
         assistant_id: string,
-        instructions?: string
+        instructions?: string,
+        model?: string,
+        tools?: any[],
+        metadata?: object
     ) => {
         const run = await openai.beta.threads.runs.create(thread_id, {
             assistant_id: assistant_id,
             instructions: instructions,
+            model: model,
+            tools: tools,
+            metadata: metadata,
         });
 
         return run;
@@ -35,8 +41,15 @@ class Runs {
      * @param
      * @returns
      */
-    public modifyRun = async () => {
-        return true;
+    public modifyRun = async (
+        thread_id: string,
+        run_id: string,
+        metadata?: object
+    ) => {
+        const run = await openai.beta.threads.runs.update(thread_id, run_id, {
+            metadata: metadata,
+        });
+        return run;
     };
 
     /**
@@ -44,8 +57,9 @@ class Runs {
      * @param
      * @returns
      */
-    public listRuns = async () => {
-        return true;
+    public listRuns = async (thread_id: string) => {
+        const runs = await openai.beta.threads.runs.list(thread_id);
+        return runs;
     };
 
     /**
@@ -53,8 +67,9 @@ class Runs {
      * @param
      * @returns
      */
-    public cancelRun = async () => {
-        return true;
+    public cancelRun = async (thread_id: string, run_id: string) => {
+        const run = await openai.beta.threads.runs.cancel(thread_id, run_id);
+        return run;
     };
 
     /**

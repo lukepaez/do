@@ -72,8 +72,14 @@ class Assistants {
      * @param
      * @returns
      */
-    public listAssistants = async () => {
-        return true;
+    public listAssistants = async (
+        limit?: number,
+        order?: string,
+        after?: string,
+        before?: string
+    ) => {
+        const assistants = await openai.beta.assistants.list();
+        return assistants;
     };
 }
 
