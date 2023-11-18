@@ -11,24 +11,31 @@ import {
     createRun,
     retrieveRun,
 } from '../services/openai/assistants/runs.service';
-import { createThread } from '../services/openai/assistants/threads.service';
+import {
+    createThread,
+    retrieveThread,
+} from '../services/openai/assistants/threads.service';
+import { completionsAnalysisPrompts } from '../config/prompts';
+import { ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages';
 
 type Data = {
     discord_id: string;
     thread_id: string;
 };
 
-type eventRequest = {
+type analysisRequest = {
     content: string;
     userId: string;
 };
 
-export const createEvent = async (
-    { content, userId }: eventRequest,
+export const createAnalysis = async (
+    { content, userId }: analysisRequest,
     res: FastifyReply
 ) => {
     try {
         // db logic here
+
+        console.log('IN ANALYSIS FUNCTION :D');
 
         //timestamping user response
 
@@ -45,10 +52,21 @@ export const createEvent = async (
             throw user;
         }
 
-        // create a message
-        const message = await createMessage(user.thread_id, 'user', content);
+        const messageList = await listMessages(user.thread_id);
 
-        console.log('\n My Message: ', message);
+        const messages = messageList.data.map(msg => {
+            if ('text' in msg.content[0]) {
+                return msg.content[0]?.text.value;
+            }
+        });
+
+        //const messages = [];
+
+        console.log('My messages: ', messages);
+        // create a message
+        //const message = await createMessage(user.thread_id, 'user', messages);
+
+        //console.log('\n My Message: ', message);
 
         // create a run
         const run = await createRun(
@@ -56,7 +74,7 @@ export const createEvent = async (
             process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : ''
         );
 
-        console.log('\n My Run: ', run);
+        //console.log('\n My Run: ', run);
 
         // polling logic: TODO: refactor
         for (let i = 0; i < 3; i++) {
@@ -72,7 +90,6 @@ export const createEvent = async (
         }
 
         // list all messages
-        const messages = await listMessages(user.thread_id);
 
         //console.log('\n My messages: ', messages);
 
@@ -80,30 +97,35 @@ export const createEvent = async (
 
         //console.log('\n My content: ', messages.data[0].content[0]?.text.value);
 
-        const eventToJSON =
-            messages?.data[0]?.content[0].type === 'text'
-                ? messages?.data[0]?.content[0].text.value
-                : null;
+        //const eventToJSON =
+        //    messages?.data[0]?.content[0].type === 'text'
+        //        ? messages?.data[0]?.content[0].text.value
+        //        : null;
 
         const body = [
             {
                 role: 'system',
                 content:
-                    "You are a json enforcer helping an ai assistant called DO clarify their responses. DO's goal is to examine past events entered by users and update a profile on the user at each event. DO needs help from the json enforcer(you) to make sure the output is in valid json format. Please examine this context, and enforce valid json strictly in this format: {response: 'response', profile: 'profile'}. In this first update, please do not change the 'response' or 'profile' fields, just enforce they are in json, in the specified format. ",
+                    completionsAnalysisPrompts.prompts[1] +
+                    `user analysis query(may be empty): ${content}`,
             },
             {
                 role: 'user',
-                content: JSON.stringify(eventToJSON),
+                content: JSON.stringify(messages),
             },
         ];
 
         //console.log('response: ', response);
 
-        const chatObj = ChatCompletionsAPI(body, 'gpt-4-1106-preview', 'event');
+        const chatObj = ChatCompletionsAPI(
+            body,
+            'gpt-4-1106-preview',
+            'analysis'
+        );
 
         const responseInJson = await chatObj.chatCompletionsCreate();
 
-        console.log('json mode response: ', responseInJson);
+        console.log('json mode response: ', responseInJson.message);
 
         if (responseInJson.message.content === null) {
             return new Error('bad gpt res');

@@ -23,7 +23,7 @@ type eventRequest = {
     userId: string;
 };
 
-export const createEvent = async (
+export const createReflections = async (
     { content, userId }: eventRequest,
     res: FastifyReply
 ) => {
@@ -48,15 +48,16 @@ export const createEvent = async (
         // create a message
         const message = await createMessage(user.thread_id, 'user', content);
 
-        console.log('\n My Message: ', message);
+        //console.log('\n My Message: ', message);
 
         // create a run
         const run = await createRun(
             user.thread_id,
-            process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : ''
+            process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : '',
+            'please summarize all interactions with the user, any pertinent trends you have noticed, or notable insights, based on the prompt the user provided. For testing purposes: if the message from the user is empty, that just means they need a general reflection.'
         );
 
-        console.log('\n My Run: ', run);
+        //console.log('\n My Run: ', run);
 
         // polling logic: TODO: refactor
         for (let i = 0; i < 3; i++) {
@@ -76,20 +77,24 @@ export const createEvent = async (
 
         //console.log('\n My messages: ', messages);
 
-        //console.log('\n My content: ', messages.data[0].content);
+        console.log('\n My content: ', messages.data[0].content);
 
-        //console.log('\n My content: ', messages.data[0].content[0]?.text.value);
+        if ('text' in messages.data[0].content[0]) {
+            console.log('NOT TEXT');
+        }
 
         const eventToJSON =
             messages?.data[0]?.content[0].type === 'text'
                 ? messages?.data[0]?.content[0].text.value
                 : null;
 
+        // eslint-disable-next-line no-console
+        console.log('eventToJson: ', eventToJSON);
+
         const body = [
             {
                 role: 'system',
-                content:
-                    "You are a json enforcer helping an ai assistant called DO clarify their responses. DO's goal is to examine past events entered by users and update a profile on the user at each event. DO needs help from the json enforcer(you) to make sure the output is in valid json format. Please examine this context, and enforce valid json strictly in this format: {response: 'response', profile: 'profile'}. In this first update, please do not change the 'response' or 'profile' fields, just enforce they are in json, in the specified format. ",
+                content: 'Please summarize the conversation so far.',
             },
             {
                 role: 'user',
@@ -99,7 +104,11 @@ export const createEvent = async (
 
         //console.log('response: ', response);
 
-        const chatObj = ChatCompletionsAPI(body, 'gpt-4-1106-preview', 'event');
+        const chatObj = ChatCompletionsAPI(
+            body,
+            'gpt-4-1106-preview',
+            'reflections'
+        );
 
         const responseInJson = await chatObj.chatCompletionsCreate();
 

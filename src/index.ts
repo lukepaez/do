@@ -5,6 +5,8 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import { initRoutes } from './routes/health/init.routes';
 import { conversationRoutes } from './routes/conversation/conversation.routes';
 import { eventRoutes } from './routes/events/event.route';
+import { analysisRoutes } from './routes/analysis/analysis.route';
+import { reflectionsRoutes } from './routes/reflections/reflections.route';
 
 const swaggerOptions = {
     swagger: {
@@ -44,6 +46,8 @@ export const register = () => {
     fastify.register(initRoutes);
     fastify.register(conversationRoutes);
     fastify.register(eventRoutes);
+    fastify.register(analysisRoutes);
+    fastify.register(reflectionsRoutes);
     return fastify;
 };
 
