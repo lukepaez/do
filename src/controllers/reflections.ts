@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { FastifyReply } from 'fastify';
 import { ChatCompletionsAPI } from '../services/openai/chat/chat.service';
-import { db } from '../server';
+import { db, openai } from '../server';
 import { timeStamp } from 'console';
 import {
     createMessage,
@@ -12,6 +12,10 @@ import {
     retrieveRun,
 } from '../services/openai/assistants/runs.service';
 import { createThread } from '../services/openai/assistants/threads.service';
+import { ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages';
+import { APIClient } from 'openai/core';
+import OpenAI from 'openai';
+import { threadId } from 'node:worker_threads';
 
 type Data = {
     discord_id: string;
@@ -45,60 +49,58 @@ export const createReflections = async (
             throw user;
         }
 
-        // create a message
-        const message = await createMessage(user.thread_id, 'user', content);
+        let allMessages: any[] = [];
+        try {
+            let hasMore = true;
+            let afterId = null;
 
-        //console.log('\n My Message: ', message);
+            while (hasMore) {
+                const options: {
+                    limit: number;
+                    order: 'desc' | 'asc' | undefined;
+                    after?: string | undefined;
+                } = {
+                    limit: 20, // You can adjust this number as needed
+                    order: 'desc', // Or 'asc', depending on your requirement
+                };
 
-        // create a run
-        const run = await createRun(
-            user.thread_id,
-            process.env?.ASSISTANT_ID ? process.env.ASSISTANT_ID : '',
-            'please summarize all interactions with the user, any pertinent trends you have noticed, or notable insights, based on the prompt the user provided. For testing purposes: if the message from the user is empty, that just means they need a general reflection.'
-        );
+                if (afterId) {
+                    options.after = afterId;
+                }
 
-        //console.log('\n My Run: ', run);
+                const response = await openai.beta.threads.messages.list(
+                    user.thread_id,
+                    options
+                );
 
-        // polling logic: TODO: refactor
-        for (let i = 0; i < 3; i++) {
-            await new Promise(resolve => {
-                setTimeout(resolve, 3000);
-                console.log('polling...');
-            });
-            const runStatus = await retrieveRun(user.thread_id, run.id);
-            if (runStatus.status != 'completed') {
-                continue;
+                const messages = response.data;
+                if (messages && messages.length > 0) {
+                    allMessages = allMessages.concat(messages);
+                    afterId = messages[messages.length - 1].id;
+                } else {
+                    hasMore = false;
+                }
             }
-            break;
+
+            console.log('All messages:', allMessages);
+        } catch (error) {
+            console.error('Error:', error);
         }
 
-        // list all messages
-        const messages = await listMessages(user.thread_id);
-
-        //console.log('\n My messages: ', messages);
-
-        console.log('\n My content: ', messages.data[0].content);
-
-        if ('text' in messages.data[0].content[0]) {
-            console.log('NOT TEXT');
-        }
-
-        const eventToJSON =
-            messages?.data[0]?.content[0].type === 'text'
-                ? messages?.data[0]?.content[0].text.value
-                : null;
-
-        // eslint-disable-next-line no-console
-        console.log('eventToJson: ', eventToJSON);
+        const userModifier = content;
 
         const body = [
             {
                 role: 'system',
-                content: 'Please summarize the conversation so far.',
+                content: `You are an expert profiler and adept correlation noticer, equipped to provide deep, personalized insights. Your analysis is now enhanced by a specific user modifier supplied with this reflection call: "${userModifier}", which is crucial for tailoring the interaction to the user's current state or needs. When no specific modifier is provided, your analysis should still draw upon the extensive conversation history and profile data to deliver comprehensive insights into the user's habits and preferences.
+
+                Highlight significant insights derived from both "Do."'s profile data and the user modifier (when available) with the tag valuableinsight: 'the insight quoted'. If these insights uncover complex patterns or require additional explanation, especially in light of the user modifier, clarify with explanation: 'your detailed explanation'.
+                
+                Present your analysis strictly adhering to this format: "response: 'your detailed response in stylized prose'". Whether drawing from the broader interaction history or focusing on specific user inputs, your response should weave together a narrative that is both predictive and dynamically personalized. This analysis will significantly contribute to "Do."'s evolution, enhancing its capability to not just organize, but also to anticipate and adapt to the user's life with intelligent foresight and nuanced understanding.`,
             },
             {
                 role: 'user',
-                content: JSON.stringify(eventToJSON),
+                content: JSON.stringify(allMessages),
             },
         ];
 
@@ -118,7 +120,7 @@ export const createReflections = async (
             return new Error('bad gpt res');
         }
 
-        const res = JSON.parse(responseInJson?.message?.content);
+        const res = responseInJson?.message?.content;
         responseInJson.message.content = res;
         return responseInJson;
     } catch (error) {
@@ -181,3 +183,6 @@ const checkIfUserExists = async (user: string): Promise<Data | Error> => {
 function getCurrentTimestamp() {
     return Date.now();
 }
+
+//TODO:: Modularize
+//function getFullThread()
