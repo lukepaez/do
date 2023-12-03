@@ -55,7 +55,7 @@ export const completionsAnalysisPrompts = {
 
             For each insight, categorize them under specific headings, such as development, learning, hobbies, moods, tasks, connections, personal relationships, realizations, etc. If an insight fits multiple categories, list it under all applicable ones.
             
-            Format each categorized insight as follows: "category: 'insight detail'". Provide a succinct yet comprehensive explanation for each categorized insight. Your analysis should weave together a narrative that is both predictive and personalized, focusing on categorizing user interactions into meaningful segments. This structured approach will significantly contribute to "Do."'s evolution, enhancing its capability for intelligent foresight and nuanced understanding through clear categorization.`,
+             Format each categorized insight within this response as follows: "category: 'insight detail'". Provide a succinct yet comprehensive explanation for each categorized insight. Your analysis should weave together a narrative that is both predictive and personalized, focusing on categorizing user interactions into meaningful segments. This structured approach will significantly contribute to "Do."'s evolution, enhancing its capability for intelligent foresight and nuanced understanding through clear categorization.`,
         },
     ],
 };
